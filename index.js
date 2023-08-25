@@ -1,25 +1,27 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json())
+
 let phonebook = [
-  { 
+  {
     "id": 1,
-    "name": "Arto Hellas", 
+    "name": "Arto Hellas",
     "number": "040-123456"
   },
-  { 
+  {
     "id": 2,
-    "name": "Ada Lovelace", 
+    "name": "Ada Lovelace",
     "number": "39-44-5323523"
   },
-  { 
+  {
     "id": 3,
-    "name": "Dan Abramov", 
+    "name": "Dan Abramov",
     "number": "12-43-234345"
   },
-  { 
+  {
     "id": 4,
-    "name": "Mary Poppendieck", 
+    "name": "Mary Poppendieck",
     "number": "39-23-6423122"
   },
   {
@@ -28,8 +30,6 @@ let phonebook = [
     "number": "86-75-3093457"
   }
 ]
-
-app.use(express.json())
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello World!</h1>')
@@ -47,25 +47,37 @@ const generateId = () => {
   return maxId + 1
 }
 
-app.post('/api/notes', (request, response) => {
+app.post('/api/persons', (request, response) => {
   const body = request.body
+  console.log(body.name)
+  console.log(phonebook)
 
-  if (!body.content) {
-    return response.status(400).json({ 
-      error: 'content missing' 
+  if (!body.name) {
+    return response.status(400).json({
+      error: 'name is missing'
+    })
+  }
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'number is missing'
     })
   }
 
-  const note = {
-    content: body.content,
-    important: body.important || false,
-    date: new Date(),
-    id: generateId(),
+  if (phonebook.some(person => person.name === body.name)) {
+    return response.status(409).json({
+      error: 'name must be unique'
+    })
   }
 
-  phonebook = phonebook.concat(note)
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number,
+  }
 
-  response.json(note)
+  phonebook = phonebook.push(person)
+
+  response.json(person)
 })
 
 app.get('/api/persons', (req, res) => {
